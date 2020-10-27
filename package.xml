@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>learning_pick_and_place</name>
+  <name>bin_picking</name>
   <version>1.0.0</version>
   <description>ROS package for learning pick and place without object model.</description>
 

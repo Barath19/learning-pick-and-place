@@ -13,10 +13,12 @@ RUN apt-get update \
 	&& add-apt-repository ppa:deadsnakes/ppa \
 	&& apt-get update \
 	&& apt-get install -y \
+	curl \
 	libeigen3-dev \
 	python3.6 \
-	ros-kinetic-franka-ros \
-	ros-kinetic-libfranka \
+	python3-dev \
+#	ros-kinetic-franka-ros \
+#	ros-kinetic-libfranka \
 	wget \
 	&& curl https://bootstrap.pypa.io/get-pip.py | sudo -H python3.6
 	
@@ -24,14 +26,55 @@ RUN apt-get update \
 RUN mkdir -p /home/Workspace
 
 WORKDIR /home/Workspace
-	
+
+
+#####################
+### INSTALL CMAKE ###
+#####################
+# https://apt.kitware.com/
+# If you are using a minimal Ubuntu image or a Docker image, 
+# you may need to install the following packages:
+
+RUN apt-get update \
+	&& apt-get install -y apt-transport-https ca-certificates gnupg software-properties-common wget \
+
+# Obtain a copy of our signing key:
+	&& wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | sudo tee /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null \
+
+# Add the repository to your sources list and update.
+# For Ubuntu Xenial Xerus (16.04):
+	&& apt-add-repository 'deb https://apt.kitware.com/ubuntu/ xenial main' \
+	&& apt-get update \
+
+# Note that if you add the release candidate repository, 
+# you will still need to add the main repository as well, 
+# as the release candidate repository does not provide production releases on its own.
+
+# As an optional step, we recommend that you also install our 
+# kitware-archive-keyring package to ensure that your keyring 
+# stays up to date as we rotate our keys. Do the following:
+	&& apt-get install kitware-archive-keyring \
+	&& rm /etc/apt/trusted.gpg.d/kitware.gpg \
+
+# Now you can install any package from our APT repository. 
+# As an example, try installing the cmake package:
+	&& apt-get install -y cmake
+
+
+###################	
+### EXTRA STEPS ###
+###################
+RUN easy_install pip \
+	&& pip install catkin_pkg \
+	&& pip install "pybind11[global]"
+
 	
 #########################
 ### INSTALL LIBFRANKA ###
 #########################
 RUN git clone --recursive https://github.com/frankaemika/libfranka.git \
 	&& cd libfranka \
-	&& git checkout 0.6.0 \
+	&& git checkout 0.7.1 \
 	&& git submodule update \
 	&& mkdir build && cd build \
 	&& cmake -DCMAKE_BUILD_TYPE=Release .. \
@@ -48,7 +91,7 @@ RUN mkdir -p catkin_ws/src && cd catkin_ws \
 	&& git clone --recursive https://github.com/frankaemika/franka_ros src/franka_ros \
 	&& apt-get update \
 	&& cd src/franka_ros \
-	&& git checkout 0.6.0 && cd ../../ \
+	&& git checkout 0.7.1 && cd ../../ \
 	&& rosdep install --from-paths src --ignore-src --rosdistro kinetic -y --skip-keys libfranka \
 	&& /bin/bash -c ". /opt/ros/kinetic/setup.sh; catkin_make -DCMAKE_BUILD_TYPE=Release -DFranka_DIR:PATH=/home/Workspace/libfranka/build" \
 	&& echo "source /home/Workspace/catkin_ws/devel/setup.sh" >> ~/.bashrc \
@@ -102,13 +145,13 @@ RUN echo "source /home/Workspace/catkin_ws/devel/setup.bash" >> ~/.bashrc \
 ##############################
 ### CLONE THE MAIN PROJECT ###
 ##############################
-RUN cd catkin_ws/src && mkdir learning-pick-and-place \
-# cd src/learning-pick-and-place
-#python3.6 -m pip install -r src/learning-pick-and-place/requirements.txt
-&& echo "export PYTHONPATH=$PYTHONPATH:/home/Workspace/catkin_ws/devel/bin_picking/scripts" >> ~/.bashrc
+RUN mkdir -p catkin_ws/src/learning-pick-and-place
+#python3.6 -m pip install -r /home/Workspace/catkin_ws/src/learning-pick-and-place/requirements.txt
+#&& echo "export PYTHONPATH=$PYTHONPATH:/home/Workspace/catkin_ws/devel/bin_picking/scripts" >> ~/.bashrc
+
 	
 
-###################	
+###################
 ### ENSENSO SDK ###
 ###################
 RUN cd .. && mkdir Downloads && cd Downloads \
@@ -116,5 +159,4 @@ RUN cd .. && mkdir Downloads && cd Downloads \
 	&& dpkg -i download\?files\=ensenso-sdk-2.3.1536-x64.deb 
 	
 	
-
 

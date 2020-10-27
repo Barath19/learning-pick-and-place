@@ -102,7 +102,10 @@ RUN echo "source /home/Workspace/catkin_ws/devel/setup.bash" >> ~/.bashrc \
 ##############################
 ### CLONE THE MAIN PROJECT ###
 ##############################
-RUN cd catkin_ws/src && mkdir learning-pick-and-place
+RUN cd catkin_ws/src && mkdir learning-pick-and-place \
+# cd src/learning-pick-and-place
+#python3.6 -m pip install -r src/learning-pick-and-place/requirements.txt
+&& echo "export PYTHONPATH=$PYTHONPATH:/home/Workspace/catkin_ws/devel/bin_picking/scripts" >> ~/.bashrc
 	
 
 ###################	

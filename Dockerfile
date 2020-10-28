@@ -17,11 +17,7 @@ RUN apt-get update \
 	libeigen3-dev \
 	python3.6 \
 	python3-dev \
-#	ros-kinetic-franka-ros \
-#	ros-kinetic-libfranka \
-	wget \
-	&& curl https://bootstrap.pypa.io/get-pip.py | sudo -H python3.6
-	
+	wget	
 
 RUN mkdir -p /home/Workspace
 
@@ -36,7 +32,7 @@ WORKDIR /home/Workspace
 # you may need to install the following packages:
 
 RUN apt-get update \
-	&& apt-get install -y apt-transport-https ca-certificates gnupg software-properties-common wget \
+	&& apt-get install -y apt-transport-https ca-certificates gnupg software-properties-common \
 
 # Obtain a copy of our signing key:
 	&& wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | sudo tee /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null \
@@ -64,7 +60,9 @@ RUN apt-get update \
 ###################	
 ### EXTRA STEPS ###
 ###################
-RUN easy_install pip \
+RUN wget https://bootstrap.pypa.io/get-pip.py \
+	&& python3.6 get-pip.py \
+	&& rm get-pip.py \
 	&& pip install catkin_pkg \
 	&& pip install "pybind11[global]"
 
@@ -110,10 +108,11 @@ RUN apt-get update \
 	# Add the repository 
 	&& add-apt-repository "deb http://realsense-hw-public.s3.amazonaws.com/Debian/apt-repo xenial main" -u \
 	# Install the librealsense, Development packages & and other needed packages
-	&& apt-get install -y librealsense2-dkms \
-	&& apt-get install -y librealsense2-utils \
-	&& apt-get install -y librealsense2-dev  \
-	&& apt-get install -y librealsense2-dbg \
+	&& apt-get install -y \
+	librealsense2-dkms \
+	librealsense2-utils \
+	librealsense2-dev  \
+	librealsense2-dbg \
 	# Upgrade the local packages 
 	&& apt-get update && apt-get --only-upgrade install -y librealsense2-utils librealsense2-dkms
 

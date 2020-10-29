@@ -7,6 +7,8 @@
 #include <Eigen/Geometry>
 #include <unsupported/Eigen/EulerAngles>
 
+#include <random>
+
 
 struct Affine {
 private:

@@ -14,14 +14,26 @@ RUN apt-get update \
 	&& apt-get update \
 	&& apt-get install -y \
 	curl \
-	libeigen3-dev \
+#	libeigen3-dev \
+	libglfw3 \
+	libglfw3-dev \
 	python3.6 \
-	python3-dev \
+	python3.6-dev \
+	ros-kinetic-cv-bridge \
+	ros-kinetic-opencv3 \
+  	ros-kinetic-moveit-core \
+  	ros-kinetic-moveit-ros-planning \
+ 	ros-kinetic-moveit-ros-planning-interface \
 	wget	
 
+ENV USERNAME=dti_research
+RUN useradd --create-home --shell /bin/bash ${USERNAME}
 RUN mkdir -p /home/Workspace
 
 WORKDIR /home/Workspace
+
+
+#################################################################################################################################################################
 
 
 #####################
@@ -57,14 +69,23 @@ RUN apt-get update \
 	&& apt-get install -y cmake
 
 
-###################	
-### EXTRA STEPS ###
-###################
+##################	
+### EXTRA DEPS ###
+##################
 RUN wget https://bootstrap.pypa.io/get-pip.py \
 	&& python3.6 get-pip.py \
 	&& rm get-pip.py \
 	&& pip install catkin_pkg \
-	&& pip install "pybind11[global]"
+	&& pip install "pybind11[global]" \
+	&& pip install pyyaml \
+	&& pip install empy \
+	&& wget https://gitlab.com/libeigen/eigen/-/archive/3.3.8/eigen-3.3.8.tar.gz \
+	&& tar -xzf eigen-3.3.8.tar.gz \
+	&& cd eigen-3.3.8 \
+	&& mkdir build && cd build \
+	&& cmake .. && make install
+
+
 
 	
 #########################
@@ -87,7 +108,6 @@ RUN mkdir -p catkin_ws/src && cd catkin_ws \
 	&& /bin/bash -c "source ~/.bashrc" \
 	&& /bin/bash -c ". /opt/ros/kinetic/setup.sh; catkin_init_workspace src" \
 	&& git clone --recursive https://github.com/frankaemika/franka_ros src/franka_ros \
-	&& apt-get update \
 	&& cd src/franka_ros \
 	&& git checkout 0.7.1 && cd ../../ \
 	&& rosdep install --from-paths src --ignore-src --rosdistro kinetic -y --skip-keys libfranka \
@@ -130,14 +150,12 @@ RUN echo "source /opt/ros/kinetic/setup.bash" >> ~/.bashrc \
 RUN /bin/bash -c "source ~/.bashrc" \
 	&& cd catkin_ws \
 	&& rosdep update \
-	&& rosdep install -y -r --from-paths src --ignore-src --rosdistro=kinetic -y \
-	#&& /bin/bash -c ". /opt/ros/kinetic/setup.sh; catkin_init_workspace" \
+	&& rosdep install -r --from-paths src --ignore-src --rosdistro=kinetic -y \
 	&& /bin/bash -c ". /opt/ros/kinetic/setup.sh; catkin_make clean" \
 	&& /bin/bash -c ". /opt/ros/kinetic/setup.sh; catkin_make -DCATKIN_ENABLE_TESTING=False -DCMAKE_BUILD_TYPE=Release" \
 	&& /bin/bash -c ". /opt/ros/kinetic/setup.sh; catkin_make install" 
 	
 RUN echo "source /home/Workspace/catkin_ws/devel/setup.bash" >> ~/.bashrc \
-	#&& echo "source /opt/ros/kinetic/setup.bash" >> ~/.bashrc \
 	&& /bin/bash -c "source ~/.bashrc"
 
 

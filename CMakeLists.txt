@@ -9,23 +9,23 @@ option(GRASPRO_BUILD_FRANKA_CONTROL "Build franka control." ON)
 
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
-
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
 
 set(Eigen3_DIRS "/usr/local/include/eigen3/")
 set(PYTHON_EXECUTABLE python3.6)
-set(PYTHON_LIBRARY "/usr/lib/python3.6/config-3.6m-x86_64-linux-gnu/libpython3.6m.so")
+#set(PYTHON_LIBRARY "/usr/lib/python3.6/config-3.6m-x86_64-linux-gnu/libpython3.6m.so")
 
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(Eigen3 REQUIRED)
+find_package(Eigen3 3.3.8 REQUIRED)
+message(STATUS "found eigen3: ${EIGEN3_INCLUDE_DIR}")
 find_package(OpenCV 3.3 REQUIRED)
 find_package(pybind11 REQUIRED)
-find_package(Python 3.6 EXACT REQUIRED)
-find_package(Franka 0.7.1 EXACT REQUIRED)
+find_package(Python3 3.6 EXACT REQUIRED)
+find_package(Franka 0.7.1 REQUIRED)
 
 
 if(GRASPRO_BUILD_ENSENSO_NODE)
@@ -118,13 +118,18 @@ add_dependencies(ros ${catkin_EXPORTED_TARGETS})
 
 
 pybind11_add_module(orthographical src/orthographic_image/python.cpp)
-target_include_directories(orthographical PRIVATE ${Eigen3_DIRS})
-target_link_libraries(orthographical PRIVATE ${OpenCV_LIBS})
+#NILY HACK
+#target_include_directories(orthographical PRIVATE ${Eigen3_DIRS})
+#target_link_libraries(orthographical PRIVATE ${OpenCV_LIBS})
+target_link_libraries(orthographical PRIVATE ${OpenCV_LIBS} Eigen3::Eigen)
 
 
 add_library(frankr src/frankr/robot.cpp src/frankr/gripper.cpp)
-target_include_directories(frankr PUBLIC ${catkin_INCLUDE_DIRS} ${Eigen3_DIRS})
-target_link_libraries(frankr PUBLIC ${catkin_LIBRARIES} Franka::Franka)
+#NILY HACK
+#target_include_directories(frankr PUBLIC ${catkin_INCLUDE_DIRS} ${Eigen3_DIRS})
+#target_link_libraries(frankr PUBLIC ${catkin_LIBRARIES} Franka::Franka)
+target_include_directories(frankr PUBLIC ${catkin_INCLUDE_DIRS})
+target_link_libraries(frankr PUBLIC ${catkin_LIBRARIES} Franka::Franka Eigen3::Eigen)
 
 pybind11_add_module(cfrankr src/frankr/python.cpp)
 target_link_libraries(cfrankr PUBLIC frankr)
@@ -132,8 +137,11 @@ target_link_libraries(cfrankr PUBLIC frankr)
 
 if(GRASPRO_BUILD_ENSENSO_NODE)
   add_library(ensenso src/ensenso/ensenso.cpp)
-  target_include_directories(ensenso PUBLIC ${Eigen3_DIRS} ${ENSENSO_INCLUDE_DIRS})
-  target_link_libraries(ensenso PUBLIC ${ENSENSO_LIBRARIES} ${OpenCV_LIBS} ros)
+  #NILY HACK
+  #target_include_directories(ensenso PUBLIC ${Eigen3_DIRS} ${ENSENSO_INCLUDE_DIRS})
+  #target_link_libraries(ensenso PUBLIC ${ENSENSO_LIBRARIES} ${OpenCV_LIBS} ros)
+  target_include_directories(ensenso PUBLIC ${ENSENSO_INCLUDE_DIRS})
+  target_link_libraries(ensenso PUBLIC ${ENSENSO_LIBRARIES} ${OpenCV_LIBS} ros Eigen3::Eigen)
 
   add_executable(ensenso_node src/ensenso/ensenso_node.cpp)
   target_link_libraries(ensenso_node PRIVATE ${OpenCV_LIBS} ensenso ros)
@@ -142,8 +150,10 @@ endif()
 
 if(GRASPRO_BUILD_REALSENSE_NODE)
   add_library(realsense src/realsense/realsense.cpp)
-  target_include_directories(realsense PUBLIC ${Eigen3_DIRS} ${GLFW_INCLUDE_DIRS} ${OPENGL_INCLUDE_DIR} ${realsense_INCLUDE_DIR})
-  target_link_libraries(realsense PUBLIC glfw ${GLFW_LIBRARIES} ${OpenCV_LIBS} ${OPENGL_LIBRARIES} ${realsense2_LIBRARY} ros)
+  #target_include_directories(realsense PUBLIC ${Eigen3_DIRS} ${GLFW_INCLUDE_DIRS} ${OPENGL_INCLUDE_DIR} ${realsense_INCLUDE_DIR})
+  #target_link_libraries(realsense PUBLIC glfw ${GLFW_LIBRARIES} ${OpenCV_LIBS} ${OPENGL_LIBRARIES} ${realsense2_LIBRARY} ros)
+  target_include_directories(realsense PUBLIC ${GLFW_INCLUDE_DIRS} ${OPENGL_INCLUDE_DIR} ${realsense_INCLUDE_DIR})
+  target_link_libraries(realsense PUBLIC glfw ${GLFW_LIBRARIES} ${OpenCV_LIBS} ${OPENGL_LIBRARIES} ${realsense2_LIBRARY} ros Eigen3::Eigen)
 
   add_executable(realsense_node src/realsense/realsense_node.cpp)
   target_link_libraries(realsense_node PRIVATE ${OpenCV_LIBS} realsense ros)

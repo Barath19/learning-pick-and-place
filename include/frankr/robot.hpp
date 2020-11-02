@@ -14,7 +14,6 @@
 #include <actionlib/client/terminal_state.h>
 
 #include <geometry_msgs/WrenchStamped.h>
-#include <franka_control/franka_state_controller.h>
 #include <franka_msgs/FrankaState.h>
 #include <franka_msgs/ErrorRecoveryAction.h>
 #include <franka_msgs/ErrorRecoveryActionGoal.h>

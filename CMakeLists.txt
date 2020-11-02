@@ -12,19 +12,20 @@ list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
 
-set(Eigen3_DIRS "/usr/local/include/eigen3/")
+set(Eigen3_DIRS "/usr/local/include/eigen3")
 set(PYTHON_EXECUTABLE python3.6)
-#set(PYTHON_LIBRARY "/usr/lib/python3.6/config-3.6m-x86_64-linux-gnu/libpython3.6m.so")
+set(PYTHON_INCLUDE_DIR "/usr/include/python3.6m")
+set(PYTHON_LIBRARY "/usr/lib/python3.6/config-3.6m-x86_64-linux-gnu/libpython3.6m.so")
 
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(Eigen3 3.3.8 REQUIRED)
+find_package(Eigen3 REQUIRED)
 message(STATUS "found eigen3: ${EIGEN3_INCLUDE_DIR}")
 find_package(OpenCV 3.3 REQUIRED)
 find_package(pybind11 REQUIRED)
-find_package(Python3 3.6 EXACT REQUIRED)
+find_package(Python3 3.6 REQUIRED)
 find_package(Franka 0.7.1 REQUIRED)
 
 
@@ -46,6 +47,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   sensor_msgs
   geometry_msgs
+  franka_control
   franka_msgs
   interactive_markers
   image_transport
@@ -56,7 +58,7 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 
-include_directories(include)
+include_directories(include ${catkin_INCLUDE_DIRS})
 
 
 ## Generate messages in the 'msg' folder
@@ -144,6 +146,7 @@ if(GRASPRO_BUILD_ENSENSO_NODE)
   target_link_libraries(ensenso PUBLIC ${ENSENSO_LIBRARIES} ${OpenCV_LIBS} ros Eigen3::Eigen)
 
   add_executable(ensenso_node src/ensenso/ensenso_node.cpp)
+  add_dependencies(ensenso_node bin_picking_generate_messages_cpp)
   target_link_libraries(ensenso_node PRIVATE ${OpenCV_LIBS} ensenso ros)
 endif()
 
@@ -156,5 +159,6 @@ if(GRASPRO_BUILD_REALSENSE_NODE)
   target_link_libraries(realsense PUBLIC glfw ${GLFW_LIBRARIES} ${OpenCV_LIBS} ${OPENGL_LIBRARIES} ${realsense2_LIBRARY} ros Eigen3::Eigen)
 
   add_executable(realsense_node src/realsense/realsense_node.cpp)
+  add_dependencies(realsense_node bin_picking_generate_messages_cpp)
   target_link_libraries(realsense_node PRIVATE ${OpenCV_LIBS} realsense ros)
 endif()

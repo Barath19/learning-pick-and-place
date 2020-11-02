@@ -14,9 +14,9 @@ RUN apt-get update \
 	&& apt-get update \
 	&& apt-get install -y \
 	curl \
-#	libeigen3-dev \
 	libglfw3 \
 	libglfw3-dev \
+#	python-catkin-tools \
 	python3.6 \
 	python3.6-dev \
 	ros-kinetic-cv-bridge \
@@ -79,13 +79,19 @@ RUN wget https://bootstrap.pypa.io/get-pip.py \
 	&& pip install "pybind11[global]" \
 	&& pip install pyyaml \
 	&& pip install empy \
-	&& wget https://gitlab.com/libeigen/eigen/-/archive/3.3.8/eigen-3.3.8.tar.gz \
-	&& tar -xzf eigen-3.3.8.tar.gz \
-	&& cd eigen-3.3.8 \
+	&& wget https://gitlab.com/libeigen/eigen/-/archive/3.3.7/eigen-3.3.7.tar.gz \
+	&& tar -xzf eigen-3.3.7.tar.gz \
+	&& cd eigen-3.3.7 \
 	&& mkdir build && cd build \
 	&& cmake .. && make install
 
 
+#######################
+### PATCH CV_BRIDGE ###
+#######################
+RUN git clone https://github.com/ros-perception/vision_opencv.git src/vision_opencv \
+	&& cd src/vision_opencv \
+	&& git checkout 1.12.8
 
 	
 #########################
@@ -110,6 +116,7 @@ RUN mkdir -p catkin_ws/src && cd catkin_ws \
 	&& git clone --recursive https://github.com/frankaemika/franka_ros src/franka_ros \
 	&& cd src/franka_ros \
 	&& git checkout 0.7.1 && cd ../../ \
+	&& apt-get update \
 	&& rosdep install --from-paths src --ignore-src --rosdistro kinetic -y --skip-keys libfranka \
 	&& /bin/bash -c ". /opt/ros/kinetic/setup.sh; catkin_make -DCMAKE_BUILD_TYPE=Release -DFranka_DIR:PATH=/home/Workspace/libfranka/build" \
 	&& echo "source /home/Workspace/catkin_ws/devel/setup.sh" >> ~/.bashrc \

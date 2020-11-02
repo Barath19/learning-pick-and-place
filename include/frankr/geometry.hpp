@@ -17,6 +17,7 @@ private:
   Eigen::Vector3d get_angles() const {
     Eigen::Vector3d angles = Euler::FromRotation<false, false, false>(data.rotation()).angles();
     Eigen::Vector3d angles_equal;
+    
     angles_equal << angles[0] - M_PI, M_PI - angles[1], angles[2] - M_PI;
 
     if (angles_equal[1] > M_PI) {

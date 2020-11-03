@@ -1,5 +1,5 @@
 FROM ros:kinetic
-MAINTAINER Lærke Fabricius llfa@teknologisk.dk & Kim Lykke Nørregaard kimn@teknologisk.dk
+LABEL maintainer="Lærke Fabricius llfa@teknologisk.dk & Kim Lykke Nørregaard kimn@teknologisk.dk"
 
 SHELL ["/bin/bash", "-c"]
 
@@ -44,47 +44,29 @@ WORKDIR /home/Workspace
 #####################
 ### INSTALL CMAKE ###
 #####################
-# https://apt.kitware.com/
-# If you are using a minimal Ubuntu image or a Docker image, 
-# you may need to install the following packages:
+# Reference: https://apt.kitware.com/
 
 RUN apt-get update \
 	&& apt-get install -y apt-transport-https ca-certificates gnupg software-properties-common \
-
-# Obtain a copy of our signing key:
 	&& wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | sudo tee /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null \
-
-# Add the repository to your sources list and update.
-# For Ubuntu Xenial Xerus (16.04):
 	&& apt-add-repository 'deb https://apt.kitware.com/ubuntu/ xenial main' \
 	&& apt-get update \
-
-# Note that if you add the release candidate repository, 
-# you will still need to add the main repository as well, 
-# as the release candidate repository does not provide production releases on its own.
-
-# As an optional step, we recommend that you also install our 
-# kitware-archive-keyring package to ensure that your keyring 
-# stays up to date as we rotate our keys. Do the following:
 	&& apt-get install kitware-archive-keyring \
 	&& rm /etc/apt/trusted.gpg.d/kitware.gpg \
-
-# Now you can install any package from our APT repository. 
-# As an example, try installing the cmake package:
 	&& apt-get install -y cmake
 
 
 ##################	
 ### EXTRA DEPS ###
 ##################
-RUN wget https://bootstrap.pypa.io/get-pip.py \
+RUN wget -q --show-progress --progress=bar:force https://bootstrap.pypa.io/get-pip.py \
 	&& python3.6 get-pip.py \
 	&& rm get-pip.py \
 	&& pip install catkin_pkg \
 	&& pip install "pybind11[global]" \
 	&& pip install pyyaml \
 	&& pip install empy \
-	&& wget https://gitlab.com/libeigen/eigen/-/archive/3.3.7/eigen-3.3.7.tar.gz \
+	&& wget -q --show-progress --progress=bar:force https://gitlab.com/libeigen/eigen/-/archive/3.3.7/eigen-3.3.7.tar.gz \
 	&& tar -xzf eigen-3.3.7.tar.gz \
 	&& cd eigen-3.3.7 \
 	&& mkdir build && cd build \
@@ -128,7 +110,6 @@ RUN git clone --recursive https://github.com/frankaemika/libfranka.git \
 ### INSTALL LIBFRANKA ROS PACKAGES ###
 ######################################
 RUN mkdir -p catkin_ws/src && cd catkin_ws \
-	#&& echo "source /opt/ros/kinetic/setup.sh" >> .bashrc \
 	&& /bin/bash -c "source ~/.bashrc" \
 	&& /bin/bash -c ". /opt/ros/kinetic/setup.sh; catkin_init_workspace src" \
 	&& git clone --recursive https://github.com/frankaemika/franka_ros src/franka_ros \
@@ -191,7 +172,7 @@ RUN mkdir -p catkin_ws/src/learning-pick-and-place
 #python3.6 -m pip install -r /home/Workspace/catkin_ws/src/learning-pick-and-place/requirements.txt
 #&& echo "export PYTHONPATH=$PYTHONPATH:/home/Workspace/catkin_ws/devel/bin_picking/scripts" >> ~/.bashrc
 
-	
+RUN pip3 install rospkg
 
 ###################
 ### ENSENSO SDK ###
@@ -199,6 +180,3 @@ RUN mkdir -p catkin_ws/src/learning-pick-and-place
 RUN cd .. && mkdir Downloads && cd Downloads \
 	&& wget -q --show-progress --progress=bar:force https://download.ensenso.com/s/ensensosdk/download?files=ensenso-sdk-2.3.1536-x64.deb \
 	&& dpkg -i download\?files\=ensenso-sdk-2.3.1536-x64.deb 
-	
-	
-

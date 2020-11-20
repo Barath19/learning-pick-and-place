@@ -14,7 +14,7 @@ from utils.camera import Camera
 from actions.action import Action, RobotPose
 from cfrankr import Affine, Gripper, MotionData, Robot, Waypoint  # pylint: disable=E0611
 from config import Config
-from learning.utils.layers import one_hot_gen  # pylint: disable:unused-import
+#from learning.utils.layers import one_hot_gen  # pylint: disable:unused-import
 from utils.episode import Episode, EpisodeHistory
 from utils.frames import Frames
 from utils.saver import Saver
@@ -27,7 +27,7 @@ class Experiment:
     def __init__(self):
         self.camera = Camera(camera_suffixes=Config.camera_suffixes)
         self.history = EpisodeHistory()
-        self.gripper = Gripper('172.16.0.2', Config.gripper_speed, Config.gripper_force)
+        self.gripper = Gripper('10.224.60.160', Config.gripper_speed, Config.gripper_force)
         self.robot = Robot('panda_arm', Config.general_dynamics_rel)
         self.saver = Saver(Config.database_url, Config.collection)
 

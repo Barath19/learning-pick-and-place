@@ -1,5 +1,5 @@
 FROM ros:kinetic
-MAINTAINER Lærke Fabricius llfa@teknologisk.dk & Kim Lykke Nørregaard kimn@teknologisk.dk
+LABEL maintainer="Nicolai Anton Lynnerup nily@dti.dk Lærke Fabricius llfa@dti.dk & Kim Lykke Nørregaard kimn@dti.dk"
 
 SHELL ["/bin/bash", "-c"]
 
@@ -16,6 +16,7 @@ RUN apt-get update \
 	curl \
 	libglfw3 \
 	libglfw3-dev \
+	nano \
 	python-catkin-tools \
 	python3.6 \
 	python3.6-dev \
@@ -27,6 +28,8 @@ RUN apt-get update \
   	ros-kinetic-moveit-core \
   	ros-kinetic-moveit-ros-planning \
  	ros-kinetic-moveit-ros-planning-interface \
+	ros-kinetic-moveit-simple-controller-manager \
+	ros-kinetic-joint-trajectory-controller \
 	wget
 
 RUN pip3 install rospkg catkin_pkg
@@ -45,32 +48,13 @@ WORKDIR /home/Workspace
 ### INSTALL CMAKE ###
 #####################
 # https://apt.kitware.com/
-# If you are using a minimal Ubuntu image or a Docker image, 
-# you may need to install the following packages:
-
 RUN apt-get update \
 	&& apt-get install -y apt-transport-https ca-certificates gnupg software-properties-common \
-
-# Obtain a copy of our signing key:
 	&& wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | sudo tee /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null \
-
-# Add the repository to your sources list and update.
-# For Ubuntu Xenial Xerus (16.04):
 	&& apt-add-repository 'deb https://apt.kitware.com/ubuntu/ xenial main' \
 	&& apt-get update \
-
-# Note that if you add the release candidate repository, 
-# you will still need to add the main repository as well, 
-# as the release candidate repository does not provide production releases on its own.
-
-# As an optional step, we recommend that you also install our 
-# kitware-archive-keyring package to ensure that your keyring 
-# stays up to date as we rotate our keys. Do the following:
 	&& apt-get install kitware-archive-keyring \
 	&& rm /etc/apt/trusted.gpg.d/kitware.gpg \
-
-# Now you can install any package from our APT repository. 
-# As an example, try installing the cmake package:
 	&& apt-get install -y cmake
 
 
@@ -80,15 +64,23 @@ RUN apt-get update \
 RUN wget https://bootstrap.pypa.io/get-pip.py \
 	&& python3.6 get-pip.py \
 	&& rm get-pip.py \
-	&& pip install catkin_pkg \
-	&& pip install "pybind11[global]" \
-	&& pip install pyyaml \
-	&& pip install empy \
-	&& wget https://gitlab.com/libeigen/eigen/-/archive/3.3.7/eigen-3.3.7.tar.gz \
-	&& tar -xzf eigen-3.3.7.tar.gz \
-	&& cd eigen-3.3.7 \
+	&& pip install \
+	catkin_pkg \
+	"pybind11[global]" \
+	install pyyaml \
+	empy \
+	rospkg
+
+
+###################
+### Eigen 3.3.8 ###
+###################
+RUN wget https://gitlab.com/libeigen/eigen/-/archive/3.3.8/eigen-3.3.8.tar.gz \
+	&& tar -xzf eigen-3.3.8.tar.gz \
+	&& cd eigen-3.3.8 \
 	&& mkdir build && cd build \
-	&& cmake .. && make install
+	&& cmake .. && make install \
+	&& cd ../.. && rm eigen-3.3.8.tar.gz
 
 
 #######################
@@ -97,7 +89,7 @@ RUN wget https://bootstrap.pypa.io/get-pip.py \
 RUN cd /usr/lib/x86_64-linux-gnu \
 	&& ln -s libboost_python-py35.so libboost_python3.so \
 	&& ln -s libboost_python-py35.a libboost_python3.a \
-	&& mkdir ~/catkin_build_ws && cd ~/catkin_build_ws \
+	&& mkdir /home/Workspace/catkin_build_ws && cd /home/Workspace/catkin_build_ws \
 	&& catkin config --extend /opt/ros/kinetic \
 	&& catkin config -DPYTHON_EXECUTABLE=/usr/bin/python3 \
 				  -DPYTHON_INCLUDE_DIR=/usr/include/python3.6m \
@@ -107,7 +99,7 @@ RUN cd /usr/lib/x86_64-linux-gnu \
 	&& git clone https://github.com/ros-perception/vision_opencv.git \
 	&& cd vision_opencv \
 	&& git checkout 1.12.8 \
-	&& cd ~/catkin_build_ws \
+	&& cd /home/Workspace/catkin_build_ws \
 	&& catkin build cv_bridge \
 	&& source install/setup.bash --extend
 
@@ -117,7 +109,7 @@ RUN cd /usr/lib/x86_64-linux-gnu \
 #########################
 RUN git clone --recursive https://github.com/frankaemika/libfranka.git \
 	&& cd libfranka \
-	&& git checkout 0.7.1 \
+	&& git checkout 0.8.0 \
 	&& git submodule update \
 	&& mkdir build && cd build \
 	&& cmake -DCMAKE_BUILD_TYPE=Release .. \
@@ -175,7 +167,7 @@ RUN echo "source /opt/ros/kinetic/setup.bash" >> ~/.bashrc \
 RUN /bin/bash -c "source ~/.bashrc" \
 	&& cd catkin_ws \
 	&& rosdep update \
-	&& rosdep install -r --from-paths src --ignore-src --rosdistro=kinetic -y \
+	&& rosdep install -r --from-paths src --ignore-src --rosdistro=kinetic -y --skip-keys libfranka \
 	&& /bin/bash -c ". /opt/ros/kinetic/setup.sh; catkin_make clean" \
 	&& /bin/bash -c ". /opt/ros/kinetic/setup.sh; catkin_make -DCATKIN_ENABLE_TESTING=False -DCMAKE_BUILD_TYPE=Release" \
 	&& /bin/bash -c ". /opt/ros/kinetic/setup.sh; catkin_make install" 
@@ -189,7 +181,10 @@ RUN echo "source /home/Workspace/catkin_ws/devel/setup.bash" >> ~/.bashrc \
 ##############################
 RUN mkdir -p catkin_ws/src/learning-pick-and-place
 #python3.6 -m pip install -r /home/Workspace/catkin_ws/src/learning-pick-and-place/requirements.txt
-#&& echo "export PYTHONPATH=$PYTHONPATH:/home/Workspace/catkin_ws/devel/bin_picking/scripts" >> ~/.bashrc
+#&& echo "export PYTHONPATH=$PYTHONPATH:/home/Workspace/catkin_ws/learning-pick-and-place/scripts" >> ~/.bashrc
+# echo "export PYTHONPATH=$PYTHONPATH:/home/Workspace/catkin_ws/devel/lib" >> ~/.bashrc
+ENV ROS_MASTER_URI=http://10.224.60.100:11311
+ENV ROS_IP=10.224.60.100
 
 	
 
@@ -199,6 +194,9 @@ RUN mkdir -p catkin_ws/src/learning-pick-and-place
 RUN cd .. && mkdir Downloads && cd Downloads \
 	&& wget -q --show-progress --progress=bar:force https://download.ensenso.com/s/ensensosdk/download?files=ensenso-sdk-2.3.1536-x64.deb \
 	&& dpkg -i download\?files\=ensenso-sdk-2.3.1536-x64.deb 
+
+
+RUN wget https://raw.githubusercontent.com/dti-research/panda_moveit_config/kinetic-devel/config/panda_arm.xacro
 	
 	
 

@@ -12,13 +12,13 @@ class Config:
     mode = Mode.Measure
 
     # Camera
-    camera_suffixes = ('ed',)
+    camera_suffixes = ('rd',)
     # camera_suffixes = ('ed', 'rd', 'rc')
 
     collection = 'placing-eval'
     # collection = 'placing-screw-1'
 
-    model_input_suffixes = ('ed',)
+    model_input_suffixes = ('rd',)
     # model_input_suffixes = ('ed', 'rd', 'rc')
 
     grasp_model = ('cylinder-cube-1', 'model-6-arch-more-layer')

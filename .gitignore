@@ -17,3 +17,4 @@ test/generated/*
 logs
 nohup.out
 
+scripts/utils/camera.py

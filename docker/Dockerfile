@@ -1,5 +1,9 @@
 FROM ros:kinetic
+<<<<<<< HEAD
 LABEL maintainer="Nicolai Anton Lynnerup nily@dti.dk Lærke Fabricius llfa@dti.dk & Kim Lykke Nørregaard kimn@dti.dk"
+=======
+LABEL maintainer="Lærke Fabricius llfa@teknologisk.dk & Kim Lykke Nørregaard kimn@teknologisk.dk"
+>>>>>>> 608e869eee17a89533cfa84922b7e6b3a5b5c127
 
 SHELL ["/bin/bash", "-c"]
 
@@ -47,7 +51,12 @@ WORKDIR /home/Workspace
 #####################
 ### INSTALL CMAKE ###
 #####################
+<<<<<<< HEAD
 # https://apt.kitware.com/
+=======
+# Reference: https://apt.kitware.com/
+
+>>>>>>> 608e869eee17a89533cfa84922b7e6b3a5b5c127
 RUN apt-get update \
 	&& apt-get install -y apt-transport-https ca-certificates gnupg software-properties-common \
 	&& wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | sudo tee /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null \
@@ -61,9 +70,10 @@ RUN apt-get update \
 ##################	
 ### EXTRA DEPS ###
 ##################
-RUN wget https://bootstrap.pypa.io/get-pip.py \
+RUN wget -q --show-progress --progress=bar:force https://bootstrap.pypa.io/get-pip.py \
 	&& python3.6 get-pip.py \
 	&& rm get-pip.py \
+<<<<<<< HEAD
 	&& pip install \
 	catkin_pkg \
 	"pybind11[global]" \
@@ -78,6 +88,15 @@ RUN wget https://bootstrap.pypa.io/get-pip.py \
 RUN wget https://gitlab.com/libeigen/eigen/-/archive/3.3.8/eigen-3.3.8.tar.gz \
 	&& tar -xzf eigen-3.3.8.tar.gz \
 	&& cd eigen-3.3.8 \
+=======
+	&& pip install catkin_pkg \
+	&& pip install "pybind11[global]" \
+	&& pip install pyyaml \
+	&& pip install empy \
+	&& wget -q --show-progress --progress=bar:force https://gitlab.com/libeigen/eigen/-/archive/3.3.7/eigen-3.3.7.tar.gz \
+	&& tar -xzf eigen-3.3.7.tar.gz \
+	&& cd eigen-3.3.7 \
+>>>>>>> 608e869eee17a89533cfa84922b7e6b3a5b5c127
 	&& mkdir build && cd build \
 	&& cmake .. && make install \
 	&& cd ../.. && rm eigen-3.3.8.tar.gz
@@ -120,7 +139,6 @@ RUN git clone --recursive https://github.com/frankaemika/libfranka.git \
 ### INSTALL LIBFRANKA ROS PACKAGES ###
 ######################################
 RUN mkdir -p catkin_ws/src && cd catkin_ws \
-	#&& echo "source /opt/ros/kinetic/setup.sh" >> .bashrc \
 	&& /bin/bash -c "source ~/.bashrc" \
 	&& /bin/bash -c ". /opt/ros/kinetic/setup.sh; catkin_init_workspace src" \
 	&& git clone --recursive https://github.com/frankaemika/franka_ros src/franka_ros \
@@ -186,7 +204,7 @@ RUN mkdir -p catkin_ws/src/learning-pick-and-place
 ENV ROS_MASTER_URI=http://10.224.60.100:11311
 ENV ROS_IP=10.224.60.100
 
-	
+RUN pip3 install rospkg
 
 ###################
 ### ENSENSO SDK ###
@@ -194,9 +212,12 @@ ENV ROS_IP=10.224.60.100
 RUN cd .. && mkdir Downloads && cd Downloads \
 	&& wget -q --show-progress --progress=bar:force https://download.ensenso.com/s/ensensosdk/download?files=ensenso-sdk-2.3.1536-x64.deb \
 	&& dpkg -i download\?files\=ensenso-sdk-2.3.1536-x64.deb 
+<<<<<<< HEAD
 
 
 RUN wget https://raw.githubusercontent.com/dti-research/panda_moveit_config/kinetic-devel/config/panda_arm.xacro
 	
 	
 
+=======
+>>>>>>> 608e869eee17a89533cfa84922b7e6b3a5b5c127

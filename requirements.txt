@@ -2,7 +2,7 @@ flask
 flask-socketio
 loguru
 numpy==1.18.5
-opencv-python
+opencv-python==3.4.4.19
 pymongo
 pandas
 requests
